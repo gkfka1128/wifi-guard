@@ -3,6 +3,9 @@
 공공 와이파이에서 ARP 스푸핑과 가짜 AP(이블 트윈)를 탐지하고, 방어 명령을 제시하는 도구.
 컴퓨터 네트워크 7조 팀 프로젝트. **탐지·방어만 하며 공격 기능은 없다.**
 
+> **처음 받았다면 [docs/SETUP.md](docs/SETUP.md)부터 보세요.** 설치, 데모 실행, 프론트 연결, 문제 해결 순서로 정리돼 있습니다.
+> API 규격: [docs/API.md](docs/API.md) · [docs/openapi.json](docs/openapi.json)
+
 ## 준비
 
 - Windows 10/11, Python 3.10 이상 (표준 라이브러리만 사용)
