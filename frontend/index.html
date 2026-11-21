@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>와이파이 지킴이</title>
+<!-- 임시 프론트엔드 (백엔드 연결 확인용). 실제 화면은 프론트 담당이 이 구조를 참고해 새로 만든다. -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<script src="wifiguard-client.js"></script>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand">
+    <span class="logo" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M12 3 4 6v6c0 4.4 3.4 8.3 8 9 4.6-.7 8-4.6 8-9V6z"/><path d="M8.5 11.5a5 5 0 0 1 7 0M10.2 13.6a2.5 2.5 0 0 1 3.6 0" class="w"/><circle cx="12" cy="15.8" r=".9" class="d"/></svg>
+    </span>
+    <div><h1>와이파이 지킴이</h1><div class="sub">공공 와이파이 위협 탐지 · 7조</div></div>
+  </div>
+  <div class="actions">
+    <span id="link" class="pill">연결 중…</span>
+    <button id="btnScan" type="button">AP 스캔</button>
+    <button id="btnLearn" type="button">기준값 저장</button>
+    <button id="btnDemo" type="button" class="primary" hidden>데모 재생</button>
+  </div>
+</header>
+
+<main>
+  <section class="hero" id="hero" data-level="unknown">
+    <div class="hero-main">
+      <div class="sub">지금 상태</div>
+      <div class="hero-level" id="overall">–</div>
+      <div class="hero-msg" id="overallMsg">백엔드에서 상태를 읽는 중입니다.</div>
+      <ul id="active" class="active"></ul>
+      <button id="btnAck" type="button" class="ack" hidden>확인함 — 지난 경보 비우기</button>
+    </div>
+    <div class="score">
+      <div class="ring" id="ring"><div><b id="score">–</b><span id="grade"></span></div></div>
+      <ul id="scoreWhy" class="why"></ul>
+    </div>
+    <div class="conn">
+      <div class="sub">연결된 와이파이</div>
+      <div id="ssid" class="ssid">–</div>
+      <dl>
+        <dt>보안</dt><dd id="auth">–</dd>
+        <dt>BSSID</dt><dd id="bssid" class="mono">–</dd>
+        <dt>공유기</dt><dd id="gw" class="mono">–</dd>
+      </dl>
+    </div>
+  </section>
+
+  <section class="modules" id="modules"></section>
+
+  <section class="board">
+    <div class="log">
+      <div class="log-head">
+        <h2>탐지 기록</h2>
+        <div class="chips" id="chips">
+          <button data-f="all" class="on">전체</button>
+          <button data-f="warning">경고</button>
+          <button data-f="caution">주의</button>
+          <button data-f="arp">ARP</button>
+          <button data-f="ap">AP</button>
+          <button data-f="dns">DNS</button>
+          <button data-f="system">시스템</button>
+        </div>
+      </div>
+      <ol id="timeline" class="timeline"></ol>
+      <p id="empty" class="empty">아직 탐지된 것이 없습니다.</p>
+    </div>
+    <aside class="detail" id="detail">
+      <p class="empty">기록을 누르면 판단 근거와 권장 대응이 여기에 나옵니다.</p>
+    </aside>
+  </section>
+
+  <section class="extras">
+    <div class="panel">
+      <div class="panel-head"><h2>환경 점검</h2><button id="btnDiag" type="button" class="small">다시 점검</button></div>
+      <p class="sub">'확인 불가'가 뜨면 여기서 무엇이 빠졌는지 확인하세요. 프로그램은 설정을 바꾸지 않습니다.</p>
+      <ul id="diag" class="checks"><li class="sub">점검 중…</li></ul>
+    </div>
+    <div class="panel">
+      <div class="panel-head"><h2>저장한 기준값</h2></div>
+      <p class="sub">'기준값 저장'으로 안전하다고 표시한 와이파이. 잘못 저장했다면 지우세요.</p>
+      <ul id="trust" class="trust"></ul>
+    </div>
+  </section>
+</main>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="app.js"></script>
+</body>
+</html>

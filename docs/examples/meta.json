@@ -1,0 +1,33 @@
+{
+  "version": "1",
+  "levels": [
+    "normal",
+    "unknown",
+    "caution",
+    "warning"
+  ],
+  "level_ko": {
+    "normal": "정상",
+    "unknown": "확인 불가",
+    "caution": "주의",
+    "warning": "경고"
+  },
+  "modules": {
+    "arp": "ARP 스푸핑",
+    "ap": "가짜 AP",
+    "dns": "DNS 응답 이상",
+    "system": "시스템"
+  },
+  "event_fields": [
+    "id",
+    "module",
+    "level",
+    "title",
+    "reason",
+    "evidence",
+    "advice",
+    "timestamp"
+  ],
+  "demo": true,
+  "csrf_header": "X-WifiGuard"
+}

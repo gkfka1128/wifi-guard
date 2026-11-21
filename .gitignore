@@ -1,0 +1,7 @@
+out/
+eval/scenarios/
+trust.json
+__pycache__/
+data/survey.csv
+data/trust_survey.json
+.venv/

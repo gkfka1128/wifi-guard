@@ -1,0 +1,104 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>와이파이 지킴이 — 백엔드 확인</title>
+<!-- 실험망은 인터넷이 없을 수 있다. 이 스크립트를 못 불러오면 3초마다 API를 다시 읽는다 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<style>
+  :root { --bg:#f6f8f9; --card:#fff; --ink:#1d2a30; --sub:#5c6b73; --line:#dde3e6;
+          --normal:#1b7f5a; --unknown:#6b7280; --caution:#c98a14; --warning:#c0392b; }
+  body { font-family:"Malgun Gothic",sans-serif; margin:0; padding:20px 16px; background:var(--bg); color:var(--ink); }
+  main { max-width:1000px; margin:0 auto; }
+  h1 { font-size:20px; margin:0 } h2 { font-size:15px; margin:22px 0 8px; color:#0b3c49 }
+  .sub { color:var(--sub); font-size:12px }
+  .row { display:flex; gap:10px; flex-wrap:wrap }
+  .card { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:12px 14px; flex:1 1 220px }
+  .lv { font-weight:bold } .normal{color:var(--normal)} .unknown{color:var(--unknown)}
+  .caution{color:var(--caution)} .warning{color:var(--warning)}
+  .big { font-size:28px }
+  table { border-collapse:collapse; width:100%; font-size:13px; background:var(--card) }
+  th,td { border-bottom:1px solid var(--line); padding:6px 8px; text-align:left; vertical-align:top }
+  th { color:var(--sub); font-weight:normal }
+  button { font:inherit; padding:6px 12px; border:1px solid var(--line); border-radius:6px; background:#fff; cursor:pointer }
+  .wrap { overflow-x:auto }
+</style>
+</head>
+<body>
+<main>
+  <h1>와이파이 지킴이 <span class="sub">백엔드 확인용 화면 — 실제 대시보드는 프론트 담당이 만든다</span></h1>
+  <div class="sub" id="conn">연결 중…</div>
+
+  <h2>전체 상태</h2>
+  <div class="row">
+    <div class="card"><div class="sub">전체 단계</div><div id="overall" class="lv big">–</div></div>
+    <div class="card"><div class="sub">안전 점수</div><div id="score" class="big">–</div><div id="scoreWhy" class="sub"></div></div>
+    <div class="card"><div class="sub">연결된 와이파이</div><div id="wifi">–</div><div id="gw" class="sub"></div></div>
+  </div>
+
+  <h2>모듈 상태</h2>
+  <div class="row" id="modules"></div>
+
+  <h2>탐지 로그 <button id="scan">AP 지금 스캔</button> <button id="learn">지금 와이파이를 기준값으로 저장</button></h2>
+  <div class="wrap"><table>
+    <thead><tr><th>시각</th><th>모듈</th><th>단계</th><th>내용</th><th>권장 대응</th></tr></thead>
+    <tbody id="log"></tbody>
+  </table></div>
+</main>
+<script>
+const KO = {normal:"정상", unknown:"확인 불가", caution:"주의", warning:"경고"};
+const $ = id => document.getElementById(id);
+// SSID 같은 값은 주변 AP가 마음대로 정할 수 있으므로 innerHTML 대신 textContent만 쓴다
+function el(tag, text, cls) { const e = document.createElement(tag); if (text != null) e.textContent = text; if (cls) e.className = cls; return e; }
+
+function renderStatus(s) {
+  $("overall").textContent = s.overall_ko; $("overall").className = "lv big " + s.overall;
+  $("score").textContent = s.score.score + "점 (" + s.score.grade + ")";
+  $("scoreWhy").textContent = s.score.reasons.join(" · ");
+  $("wifi").textContent = s.connection ? s.connection.ssid + " (" + (s.connection.auth || "?") + ")" : "연결 정보 없음";
+  $("gw").textContent = s.gateway ? "공유기 " + s.gateway.ip + " · " + (s.gateway.mac || "MAC 모름") : "";
+  const box = $("modules"); box.replaceChildren();
+  for (const [name, m] of Object.entries(s.modules)) {
+    const c = el("div", null, "card");
+    c.append(el("div", name.toUpperCase(), "sub"), el("div", KO[m.level], "lv " + m.level), el("div", m.detail, "sub"));
+    box.append(c);
+  }
+}
+
+function eventRow(e) {
+  const tr = el("tr");
+  const what = el("td"); what.append(el("div", e.title), el("div", e.reason, "sub"));
+  tr.append(el("td", e.timestamp.replace("T", " ").slice(0, 19)), el("td", e.module),
+            el("td", KO[e.level], "lv " + e.level), what, el("td", (e.advice || []).join("\n"), "sub"));
+  return tr;
+}
+
+async function refresh() {
+  renderStatus(await (await fetch("/api/status")).json());
+  const evs = await (await fetch("/api/events?limit=100")).json();
+  $("log").replaceChildren(...evs.map(eventRow));
+}
+
+const POST = {method:"POST", headers:{"X-WifiGuard":"1"}};   // 이 헤더가 없으면 서버가 거절한다
+$("scan").onclick = async () => { await fetch("/api/scan", POST); refresh(); };
+$("learn").onclick = async () => {
+  if (!confirm("지금 연결된 와이파이가 안전하다고 확신할 때만 저장하세요. 저장할까요?")) return;
+  const r = await (await fetch("/api/learn", POST)).json();
+  alert(r.ok ? "저장했습니다: " + r.ssid : r.reason); refresh();
+};
+
+refresh();
+if (window.io) {
+  const sock = io();
+  sock.on("connect", () => $("conn").textContent = "실시간 연결됨 (Socket.IO)");
+  sock.on("disconnect", () => $("conn").textContent = "연결 끊김 — 다시 연결 중…");
+  sock.on("status", renderStatus);
+  sock.on("event", e => $("log").prepend(eventRow(e)));
+} else {
+  $("conn").textContent = "Socket.IO 스크립트를 불러오지 못해 3초마다 새로 읽음 (인터넷 없는 실험망)";
+  setInterval(refresh, 3000);
+}
+</script>
+</body>
+</html>

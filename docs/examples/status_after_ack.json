@@ -1,0 +1,43 @@
+{
+  "overall": "normal",
+  "overall_ko": "정상",
+  "modules": {
+    "arp": {
+      "level": "normal",
+      "detail": "패킷 수집 중 (Wi-Fi)"
+    },
+    "dns": {
+      "level": "normal",
+      "detail": "패킷 수집 중 (Wi-Fi, UDP 53만 — DoH는 보이지 않음)"
+    },
+    "ap": {
+      "level": "normal",
+      "detail": "주변 AP 2개 확인, 의심 1개"
+    }
+  },
+  "active": [],
+  "ack_id": 6,
+  "connection": {
+    "ssid": "Cafe",
+    "bssid": "88:36:6c:00:00:01",
+    "auth": "WPA2-개인"
+  },
+  "gateway": {
+    "ip": "192.168.0.1",
+    "mac": "88:36:6c:00:00:01",
+    "iface": "Wi-Fi"
+  },
+  "score": {
+    "score": 100,
+    "grade": "안전",
+    "reasons": []
+  },
+  "counts": {
+    "caution": 2,
+    "normal": 1,
+    "warning": 3
+  },
+  "trusted_ssids": [
+    "Cafe"
+  ]
+}

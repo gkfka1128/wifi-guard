@@ -1,0 +1,103 @@
+{
+  "seed": 7,
+  "normal": {
+    "basic": {
+      "no_ref": {
+        "sessions": 100,
+        "caution_or_more": 0,
+        "warning": 0
+      },
+      "ref": {
+        "sessions": 100,
+        "caution_or_more": 0,
+        "warning": 0
+      }
+    },
+    "fallback": {
+      "no_ref": {
+        "sessions": 100,
+        "caution_or_more": 0,
+        "warning": 0
+      },
+      "ref": {
+        "sessions": 100,
+        "caution_or_more": 0,
+        "warning": 0
+      }
+    },
+    "retransmit": {
+      "no_ref": {
+        "sessions": 100,
+        "caution_or_more": 0,
+        "warning": 0
+      },
+      "ref": {
+        "sessions": 100,
+        "caution_or_more": 0,
+        "warning": 0
+      }
+    },
+    "rr_retrans": {
+      "no_ref": {
+        "sessions": 100,
+        "caution_or_more": 0,
+        "warning": 0
+      },
+      "ref": {
+        "sessions": 100,
+        "caution_or_more": 0,
+        "warning": 0
+      }
+    }
+  },
+  "attack": {
+    "race_lan": {
+      "no_ref": {
+        "sessions": 20,
+        "caution_or_more": 20,
+        "warning": 20
+      },
+      "ref": {
+        "sessions": 20,
+        "caution_or_more": 20,
+        "warning": 20
+      }
+    },
+    "race_spoof": {
+      "no_ref": {
+        "sessions": 20,
+        "caution_or_more": 20,
+        "warning": 0
+      },
+      "ref": {
+        "sessions": 20,
+        "caution_or_more": 20,
+        "warning": 20
+      }
+    },
+    "only_lan": {
+      "no_ref": {
+        "sessions": 20,
+        "caution_or_more": 0,
+        "warning": 0
+      },
+      "ref": {
+        "sessions": 20,
+        "caution_or_more": 20,
+        "warning": 0
+      }
+    },
+    "mitm_only": {
+      "no_ref": {
+        "sessions": 20,
+        "caution_or_more": 0,
+        "warning": 0
+      },
+      "ref": {
+        "sessions": 20,
+        "caution_or_more": 0,
+        "warning": 0
+      }
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "overall": "unknown",
+  "overall_ko": "확인 불가",
+  "modules": {
+    "arp": {
+      "level": "normal",
+      "detail": "패킷 수집 중 (Wi-Fi)"
+    },
+    "dns": {
+      "level": "normal",
+      "detail": "패킷 수집 중 (Wi-Fi, UDP 53만 — DoH는 보이지 않음)"
+    },
+    "ap": {
+      "level": "unknown",
+      "detail": "시작 전"
+    }
+  },
+  "active": [],
+  "ack_id": 0,
+  "connection": null,
+  "gateway": null,
+  "score": {
+    "score": 100,
+    "grade": "안전",
+    "reasons": []
+  },
+  "counts": {},
+  "trusted_ssids": []
+}

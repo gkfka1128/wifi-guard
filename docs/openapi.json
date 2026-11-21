@@ -1,0 +1,1410 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "와이파이 지킴이 백엔드 API",
+    "version": "1",
+    "description": "프론트엔드 ↔ 백엔드 인터페이스 규격. 사람이 읽는 설명은 docs/API.md, 실제 응답 예시는 docs/examples/.\n\n실시간 전달은 Socket.IO (OpenAPI 밖): 서버 → 화면 'status'(Status 모양, 접속 직후 1회 + 바뀔 때마다), 'event'(Event 하나). 화면 → 서버 소켓 이벤트는 없다."
+  },
+  "servers": [
+    {
+      "url": "http://127.0.0.1:5000",
+      "description": "로컬 전용"
+    }
+  ],
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "살아 있는지 확인",
+        "responses": {
+          "200": {
+            "description": "정상",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "version": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "version"
+                  ]
+                },
+                "example": {
+                  "ok": true,
+                  "version": "1"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/meta": {
+      "get": {
+        "summary": "단계·모듈 이름 (하드코딩 대신 사용)",
+        "responses": {
+          "200": {
+            "description": "정상",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "version": {
+                      "type": "string"
+                    },
+                    "levels": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/components/schemas/Level"
+                      }
+                    },
+                    "level_ko": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "modules": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "type": "string"
+                      }
+                    },
+                    "event_fields": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    },
+                    "demo": {
+                      "type": "boolean"
+                    },
+                    "csrf_header": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "version",
+                    "levels",
+                    "level_ko",
+                    "modules",
+                    "event_fields",
+                    "demo",
+                    "csrf_header"
+                  ]
+                },
+                "example": {
+                  "version": "1",
+                  "levels": [
+                    "normal",
+                    "unknown",
+                    "caution",
+                    "warning"
+                  ],
+                  "level_ko": {
+                    "normal": "정상",
+                    "unknown": "확인 불가",
+                    "caution": "주의",
+                    "warning": "경고"
+                  },
+                  "modules": {
+                    "arp": "ARP 스푸핑",
+                    "ap": "가짜 AP",
+                    "dns": "DNS 응답 이상",
+                    "system": "시스템"
+                  },
+                  "event_fields": [
+                    "id",
+                    "module",
+                    "level",
+                    "title",
+                    "reason",
+                    "evidence",
+                    "advice",
+                    "timestamp"
+                  ],
+                  "demo": true,
+                  "csrf_header": "X-WifiGuard"
+                }
+              }
+            }
+          }
+        },
+        "description": "levels는 낮은 단계 → 높은 단계 순서. demo가 true일 때만 데모 버튼을 보여 준다."
+      }
+    },
+    "/api/status": {
+      "get": {
+        "summary": "전체 상태",
+        "responses": {
+          "200": {
+            "description": "정상",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Status"
+                },
+                "example": {
+                  "overall": "warning",
+                  "overall_ko": "경고",
+                  "modules": {
+                    "arp": {
+                      "level": "normal",
+                      "detail": "패킷 수집 중 (Wi-Fi)"
+                    },
+                    "dns": {
+                      "level": "normal",
+                      "detail": "패킷 수집 중 (Wi-Fi, UDP 53만 — DoH는 보이지 않음)"
+                    },
+                    "ap": {
+                      "level": "normal",
+                      "detail": "주변 AP 2개 확인, 의심 1개"
+                    }
+                  },
+                  "active": [
+                    {
+                      "module": "dns",
+                      "level": "warning",
+                      "title": "DNS 응답 이상: bank.example",
+                      "event_id": 5,
+                      "last_seen": "2026-11-19T00:18:53+09:00"
+                    },
+                    {
+                      "module": "arp",
+                      "level": "warning",
+                      "title": "ARP 스푸핑 의심",
+                      "event_id": 4,
+                      "last_seen": "2026-11-19T00:18:53+09:00"
+                    },
+                    {
+                      "module": "arp",
+                      "level": "caution",
+                      "title": "ARP 스푸핑 의심",
+                      "event_id": 2,
+                      "last_seen": "2026-11-19T00:18:53+09:00"
+                    }
+                  ],
+                  "ack_id": 0,
+                  "connection": {
+                    "ssid": "Cafe",
+                    "bssid": "88:36:6c:00:00:01",
+                    "auth": "WPA2-개인"
+                  },
+                  "gateway": {
+                    "ip": "192.168.0.1",
+                    "mac": "88:36:6c:00:00:01",
+                    "iface": "Wi-Fi"
+                  },
+                  "score": {
+                    "score": 40,
+                    "grade": "위험",
+                    "reasons": [
+                      "ARP 스푸핑 경고가 있음 (−60)"
+                    ]
+                  },
+                  "counts": {
+                    "caution": 2,
+                    "warning": 3
+                  },
+                  "trusted_ssids": [
+                    "Cafe"
+                  ]
+                }
+              }
+            }
+          }
+        },
+        "description": "Socket.IO 'status' 이벤트와 같은 모양."
+      }
+    },
+    "/api/events": {
+      "get": {
+        "summary": "이벤트 목록 (최신순)",
+        "responses": {
+          "200": {
+            "description": "정상",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Event"
+                  }
+                },
+                "example": [
+                  {
+                    "id": 5,
+                    "timestamp": "2026-10-26T16:35:39+09:00",
+                    "module": "dns",
+                    "level": "warning",
+                    "title": "DNS 응답 이상: bank.example",
+                    "reason": "질문한 DNS 서버(192.168.0.1)가 아닌 192.168.0.66가 응답함 / 같은 질문에 다른 답이 두 번 옴 (198.51.100.66 / 203.0.113.50)",
+                    "evidence": {
+                      "qname": "bank.example",
+                      "client": "192.168.0.34",
+                      "server": "192.168.0.1",
+                      "answers": [
+                        "198.51.100.66",
+                        "203.0.113.50"
+                      ],
+                      "score": 70,
+                      "rules": [
+                        "D2",
+                        "D1"
+                      ]
+                    },
+                    "advice": [
+                      "다른 네트워크(휴대폰 데이터 등)에서 같은 주소로 접속해 비교해 보기"
+                    ]
+                  },
+                  {
+                    "id": 4,
+                    "timestamp": "2026-10-26T16:34:18+09:00",
+                    "module": "arp",
+                    "level": "warning",
+                    "title": "ARP 스푸핑 의심",
+                    "reason": "공유기 192.168.0.1의 MAC이 88:36:6c:00:00:01 → 88:36:6c:6a:c0:4c로 바뀜 / 요청 없는 주소 주장이 10초에 3번",
+                    "evidence": {
+                      "target_mac": "88:36:6c:6a:c0:4c",
+                      "suspect": "88:36:6c:6a:c0:4c",
+                      "score": 70,
+                      "claimed_ips": [
+                        "192.168.0.1"
+                      ],
+                      "real_macs": {
+                        "192.168.0.1": "88:36:6c:00:00:01"
+                      },
+                      "frames": [
+                        19,
+                        22
+                      ]
+                    },
+                    "advice": [
+                      "netsh interface ipv4 set neighbors interface=\"Wi-Fi\" address=192.168.0.1 neighbor=88-36-6c-00-00-01 store=active"
+                    ]
+                  },
+                  {
+                    "id": 3,
+                    "timestamp": "2026-10-26T16:34:18+09:00",
+                    "module": "arp",
+                    "level": "caution",
+                    "title": "ARP 스푸핑 의심",
+                    "reason": "공유기 192.168.0.1의 MAC이 88:36:6c:00:00:01 → 88:36:6c:6a:c0:4c로 바뀜",
+                    "evidence": {
+                      "target_mac": "88:36:6c:6a:c0:4c",
+                      "suspect": "확인 필요",
+                      "score": 40,
+                      "claimed_ips": [
+                        "192.168.0.1"
+                      ],
+                      "real_macs": {
+                        "192.168.0.1": "88:36:6c:00:00:01"
+                      },
+                      "frames": [
+                        19,
+                        19
+                      ]
+                    },
+                    "advice": []
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "description": "개수 (기본 50, 최대 500)",
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 500,
+              "default": 50
+            }
+          },
+          {
+            "name": "module",
+            "in": "query",
+            "required": false,
+            "description": "모듈로 거르기",
+            "schema": {
+              "$ref": "#/components/schemas/Module"
+            }
+          },
+          {
+            "name": "level",
+            "in": "query",
+            "required": false,
+            "description": "단계로 거르기",
+            "schema": {
+              "$ref": "#/components/schemas/Level"
+            }
+          },
+          {
+            "name": "since",
+            "in": "query",
+            "required": false,
+            "description": "이 id보다 새 이벤트만 (재연결 후 놓친 것 채우기)",
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ]
+      }
+    },
+    "/api/trust": {
+      "get": {
+        "summary": "저장한 기준값",
+        "responses": {
+          "200": {
+            "description": "정상",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/TrustItem"
+                  }
+                },
+                "example": [
+                  {
+                    "ssid": "Cafe",
+                    "bssids": [
+                      "88:36:6c:00:00:01"
+                    ],
+                    "gateway_mac": "88:36:6c:00:00:01",
+                    "gateway_ip": "192.168.0.1"
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/diagnostics": {
+      "get": {
+        "summary": "실행 환경 점검",
+        "responses": {
+          "200": {
+            "description": "정상",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "npcap": {
+                      "$ref": "#/components/schemas/DiagItem"
+                    },
+                    "admin": {
+                      "$ref": "#/components/schemas/DiagItem"
+                    },
+                    "wlan": {
+                      "$ref": "#/components/schemas/DiagItem"
+                    },
+                    "location": {
+                      "$ref": "#/components/schemas/DiagItem"
+                    },
+                    "networks": {
+                      "$ref": "#/components/schemas/DiagItem"
+                    }
+                  },
+                  "required": [
+                    "npcap",
+                    "admin",
+                    "wlan",
+                    "location",
+                    "networks"
+                  ]
+                },
+                "example": {
+                  "npcap": {
+                    "label": "Npcap 드라이버",
+                    "ok": false,
+                    "detail": "Npcap이 없습니다. https://npcap.com 에서 설치하세요 (설치 옵션: 'WinPcap API-compatible Mode' 체크)."
+                  },
+                  "admin": {
+                    "label": "관리자 권한",
+                    "ok": true,
+                    "detail": "관리자 권한으로 실행 중"
+                  },
+                  "wlan": {
+                    "label": "와이파이",
+                    "ok": true,
+                    "detail": "무선 랜카드 켜짐, 와이파이 연결됨"
+                  },
+                  "location": {
+                    "label": "위치 권한",
+                    "ok": true,
+                    "detail": "위치 권한 허용됨"
+                  },
+                  "networks": {
+                    "label": "주변 AP 목록",
+                    "ok": true,
+                    "detail": "주변 AP(BSSID) 12개 읽힘"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "description": "키 순서(npcap → admin → wlan → location → networks)대로 보여 준다. netsh를 불러 1–2초 걸린다."
+      }
+    },
+    "/api/scan": {
+      "post": {
+        "summary": "주변 AP 지금 스캔",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Csrf"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "스캔 완료",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "alerts": {
+                      "type": "integer",
+                      "description": "새로 판단한 의심 AP 수"
+                    },
+                    "status": {
+                      "$ref": "#/components/schemas/Status"
+                    }
+                  },
+                  "required": [
+                    "alerts",
+                    "status"
+                  ]
+                },
+                "example": {
+                  "alerts": 1,
+                  "status": {
+                    "overall": "warning",
+                    "overall_ko": "경고",
+                    "modules": {
+                      "arp": {
+                        "level": "normal",
+                        "detail": "패킷 수집 중 (Wi-Fi)"
+                      },
+                      "dns": {
+                        "level": "normal",
+                        "detail": "패킷 수집 중 (Wi-Fi, UDP 53만 — DoH는 보이지 않음)"
+                      },
+                      "ap": {
+                        "level": "normal",
+                        "detail": "주변 AP 2개 확인, 의심 1개"
+                      }
+                    },
+                    "active": [
+                      {
+                        "module": "ap",
+                        "level": "warning",
+                        "title": "가짜 AP 의심: Cafe",
+                        "event_id": 1,
+                        "last_seen": "2026-11-19T00:18:53+09:00"
+                      }
+                    ],
+                    "ack_id": 0,
+                    "connection": {
+                      "ssid": "Cafe",
+                      "bssid": "88:36:6c:00:00:01",
+                      "auth": "WPA2-개인"
+                    },
+                    "gateway": {
+                      "ip": "192.168.0.1",
+                      "mac": "88:36:6c:00:00:01",
+                      "iface": "Wi-Fi"
+                    },
+                    "score": {
+                      "score": 80,
+                      "grade": "안전",
+                      "reasons": [
+                        "같은 이름의 가짜 AP가 주변에 있음 (−20)"
+                      ]
+                    },
+                    "counts": {
+                      "warning": 1
+                    },
+                    "trusted_ssids": []
+                  }
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "X-WifiGuard 헤더 없음 / 허용되지 않은 Origin / 로컬 주소가 아님",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "ok": false,
+                  "reason": "X-WifiGuard: 1 헤더가 필요합니다."
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/learn": {
+      "post": {
+        "summary": "지금 와이파이를 기준값으로 저장",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Csrf"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "저장함",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "ssid": {
+                      "type": "string"
+                    },
+                    "bssid": {
+                      "type": "string",
+                      "nullable": true
+                    },
+                    "gateway": {
+                      "$ref": "#/components/schemas/Gateway"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "ssid",
+                    "bssid",
+                    "gateway"
+                  ]
+                },
+                "example": {
+                  "ok": true,
+                  "ssid": "Cafe",
+                  "bssid": "88:36:6c:00:00:01",
+                  "gateway": {
+                    "ip": "192.168.0.1",
+                    "mac": "88:36:6c:00:00:01",
+                    "iface": "Wi-Fi"
+                  }
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "연결된 와이파이가 없음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "ok": false,
+                  "reason": "연결된 와이파이가 없습니다."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "X-WifiGuard 헤더 없음 / 허용되지 않은 Origin / 로컬 주소가 아님",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "ok": false,
+                  "reason": "X-WifiGuard: 1 헤더가 필요합니다."
+                }
+              }
+            }
+          }
+        },
+        "description": "처음 본 값이 진짜라고 가정하므로 화면에서 반드시 확인 창을 띄운다. 저장하면 유효하던 ARP 경보를 비운다."
+      }
+    },
+    "/api/trust/forget": {
+      "post": {
+        "summary": "기준값 하나 지우기",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Csrf"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "지움",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "ssid": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "ssid"
+                  ]
+                },
+                "example": {
+                  "ok": true,
+                  "ssid": "Cafe"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "ssid 빠짐",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "ok": false,
+                  "reason": "ssid가 필요합니다."
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "저장된 기준값 없음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "ok": false,
+                  "reason": "저장된 기준값이 없습니다: 없는와이파이"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "X-WifiGuard 헤더 없음 / 허용되지 않은 Origin / 로컬 주소가 아님",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "ok": false,
+                  "reason": "X-WifiGuard: 1 헤더가 필요합니다."
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "ssid": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "ssid"
+                ]
+              },
+              "example": {
+                "ssid": "Cafe"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/ack": {
+      "post": {
+        "summary": "'확인함' — 유효한 경보 비우기",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Csrf"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "비움",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "cleared": {
+                      "type": "integer",
+                      "description": "비운 경보 수"
+                    },
+                    "ack_id": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "cleared",
+                    "ack_id"
+                  ]
+                },
+                "example": {
+                  "ok": true,
+                  "cleared": 3,
+                  "ack_id": 6
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "X-WifiGuard 헤더 없음 / 허용되지 않은 Origin / 로컬 주소가 아님",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "ok": false,
+                  "reason": "X-WifiGuard: 1 헤더가 필요합니다."
+                }
+              }
+            }
+          }
+        },
+        "description": "system 이벤트가 하나 남는다. 공격이 계속되면 제목 끝에 '(확인 후에도 계속됨)'이 붙어 다시 들어온다."
+      }
+    },
+    "/api/demo": {
+      "post": {
+        "summary": "데모 pcap 재생",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/Csrf"
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "재생 시작",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "files": {
+                      "type": "array",
+                      "items": {
+                        "type": "string"
+                      }
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "files"
+                  ]
+                },
+                "example": {
+                  "ok": true,
+                  "files": [
+                    "victim_view.pcap",
+                    "dns_race.pcap"
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "데모가 꺼져 있음",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "ok": false,
+                  "reason": "데모 pcap이 설정되지 않았습니다."
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "이미 재생 중",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "ok": false,
+                  "reason": "데모를 이미 재생하고 있습니다."
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "X-WifiGuard 헤더 없음 / 허용되지 않은 Origin / 로컬 주소가 아님",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                },
+                "example": {
+                  "ok": false,
+                  "reason": "X-WifiGuard: 1 헤더가 필요합니다."
+                }
+              }
+            }
+          }
+        },
+        "description": "서버를 --demo로 켠 경우에만. 끝나면 판단 상태를 재생 전으로 되돌린다 (경보는 active에 남음). 결과는 소켓·폴링으로 받는다."
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Level": {
+        "type": "string",
+        "description": "판정 단계. 낮은 → 높은 순서: normal < unknown < caution < warning",
+        "enum": [
+          "normal",
+          "unknown",
+          "caution",
+          "warning"
+        ]
+      },
+      "Module": {
+        "type": "string",
+        "description": "탐지 모듈. system은 모듈 상태 변화·사용자 확인 기록",
+        "enum": [
+          "arp",
+          "ap",
+          "dns",
+          "system"
+        ]
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "ok": {
+            "type": "boolean",
+            "enum": [
+              false
+            ]
+          },
+          "reason": {
+            "type": "string",
+            "description": "사용자에게 보여 줄 수 있는 한글 설명"
+          }
+        },
+        "required": [
+          "ok",
+          "reason"
+        ]
+      },
+      "Event": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "integer",
+            "description": "1부터 증가. since 파라미터·active.event_id와 연결"
+          },
+          "module": {
+            "$ref": "#/components/schemas/Module"
+          },
+          "level": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "title": {
+            "type": "string",
+            "description": "한 줄 제목"
+          },
+          "reason": {
+            "type": "string",
+            "description": "판단 이유. 여러 개면 ' / '로 이어 붙임"
+          },
+          "evidence": {
+            "description": "판단 근거. 키는 module마다 다르다 (EvidenceArp / EvidenceAp / EvidenceDns / EvidenceSystem)",
+            "oneOf": [
+              {
+                "$ref": "#/components/schemas/EvidenceArp"
+              },
+              {
+                "$ref": "#/components/schemas/EvidenceAp"
+              },
+              {
+                "$ref": "#/components/schemas/EvidenceDns"
+              },
+              {
+                "$ref": "#/components/schemas/EvidenceSystem"
+              }
+            ]
+          },
+          "advice": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "권장 대응 명령. 백엔드는 실행하지 않는다. 화면은 보여 주고 복사만 하게 한다. 빈 배열 가능"
+          },
+          "timestamp": {
+            "type": "string",
+            "description": "ISO 8601 (+09:00). pcap 재생이면 패킷이 찍힌 시각",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "id",
+          "module",
+          "level",
+          "title",
+          "reason",
+          "evidence",
+          "advice",
+          "timestamp"
+        ]
+      },
+      "EvidenceArp": {
+        "type": "object",
+        "properties": {
+          "target_mac": {
+            "type": "string",
+            "description": "의심 MAC"
+          },
+          "suspect": {
+            "type": "string",
+            "description": "공격자 추정 MAC. 모르면 '확인 필요'"
+          },
+          "score": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "claimed_ips": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "이 MAC이 자기 것이라고 주장한 IP"
+          },
+          "real_macs": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "string"
+            },
+            "description": "{IP: 원래 MAC}"
+          },
+          "frames": {
+            "type": "array",
+            "items": {
+              "type": "integer"
+            },
+            "description": "[처음, 마지막] 프레임 번호"
+          }
+        },
+        "required": [
+          "target_mac",
+          "suspect",
+          "score",
+          "claimed_ips",
+          "real_macs",
+          "frames"
+        ]
+      },
+      "EvidenceAp": {
+        "type": "object",
+        "properties": {
+          "ssid": {
+            "type": "string"
+          },
+          "bssid": {
+            "type": "string"
+          },
+          "auth": {
+            "type": "string",
+            "description": "보안 방식 (예: WPA2-개인, 개방)"
+          },
+          "signal": {
+            "type": "integer",
+            "description": "신호 세기 %",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "score": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          }
+        },
+        "required": [
+          "ssid",
+          "bssid",
+          "auth",
+          "signal",
+          "score"
+        ]
+      },
+      "EvidenceDns": {
+        "type": "object",
+        "properties": {
+          "qname": {
+            "type": "string",
+            "description": "질문한 도메인"
+          },
+          "client": {
+            "type": "string",
+            "description": "질문한 기기 IP"
+          },
+          "server": {
+            "type": "string",
+            "description": "질문을 받은 DNS 서버 IP"
+          },
+          "answers": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "받은 응답 주소들"
+          },
+          "score": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "rules": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": [
+                "D1",
+                "D2",
+                "D3"
+              ]
+            },
+            "description": "D1 같은 질문에 다른 응답 / D2 질문하지 않은 서버가 응답 / D3 기준 DNS와 다름"
+          }
+        },
+        "required": [
+          "qname",
+          "client",
+          "server",
+          "answers",
+          "score",
+          "rules"
+        ]
+      },
+      "EvidenceSystem": {
+        "type": "object",
+        "properties": {
+          "module": {
+            "type": "string",
+            "description": "상태가 바뀐 모듈 (arp·ap·dns)"
+          }
+        },
+        "required": [],
+        "description": "모듈이 '확인 불가'로 바뀐 기록이면 module이 있고, '확인함' 기록이면 빈 객체"
+      },
+      "ModuleState": {
+        "type": "object",
+        "properties": {
+          "level": {
+            "type": "string",
+            "description": "normal(동작 중) 또는 unknown(확인 불가). 경보 단계가 아니다",
+            "enum": [
+              "normal",
+              "unknown"
+            ]
+          },
+          "detail": {
+            "type": "string",
+            "description": "상태 설명 (예: '패킷 수집 중 (Wi-Fi)', '패킷 수집을 끄고 실행함 (--no-capture)'). 모듈 카드에 그대로 보여 준다"
+          }
+        },
+        "required": [
+          "level",
+          "detail"
+        ]
+      },
+      "ActiveAlert": {
+        "type": "object",
+        "properties": {
+          "module": {
+            "$ref": "#/components/schemas/Module"
+          },
+          "level": {
+            "type": "string",
+            "enum": [
+              "caution",
+              "warning"
+            ]
+          },
+          "title": {
+            "type": "string"
+          },
+          "event_id": {
+            "type": "integer",
+            "description": "상세는 /api/events에서 이 id로 찾는다"
+          },
+          "last_seen": {
+            "type": "string",
+            "description": "마지막으로 근거가 보인 시각",
+            "format": "date-time"
+          }
+        },
+        "required": [
+          "module",
+          "level",
+          "title",
+          "event_id",
+          "last_seen"
+        ]
+      },
+      "Connection": {
+        "type": "object",
+        "properties": {
+          "ssid": {
+            "type": "string"
+          },
+          "bssid": {
+            "type": "string"
+          },
+          "auth": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ssid",
+          "bssid",
+          "auth"
+        ],
+        "nullable": true,
+        "description": "연결된 와이파이. 없으면 null"
+      },
+      "Gateway": {
+        "type": "object",
+        "properties": {
+          "ip": {
+            "type": "string"
+          },
+          "mac": {
+            "type": "string"
+          },
+          "iface": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "ip",
+          "mac",
+          "iface"
+        ],
+        "nullable": true,
+        "description": "공유기. 모르면 null"
+      },
+      "Score": {
+        "type": "object",
+        "properties": {
+          "score": {
+            "type": "integer",
+            "minimum": 0,
+            "maximum": 100
+          },
+          "grade": {
+            "type": "string",
+            "description": "80+ 안전, 50+ 주의, 그 아래 위험",
+            "enum": [
+              "안전",
+              "주의",
+              "위험"
+            ]
+          },
+          "reasons": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "감점 이유. 없으면 빈 배열"
+          }
+        },
+        "required": [
+          "score",
+          "grade",
+          "reasons"
+        ]
+      },
+      "Status": {
+        "type": "object",
+        "properties": {
+          "overall": {
+            "$ref": "#/components/schemas/Level"
+          },
+          "overall_ko": {
+            "type": "string",
+            "description": "overall의 한글"
+          },
+          "modules": {
+            "type": "object",
+            "properties": {
+              "arp": {
+                "$ref": "#/components/schemas/ModuleState"
+              },
+              "dns": {
+                "$ref": "#/components/schemas/ModuleState"
+              },
+              "ap": {
+                "$ref": "#/components/schemas/ModuleState"
+              }
+            },
+            "required": [
+              "arp",
+              "dns",
+              "ap"
+            ]
+          },
+          "active": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ActiveAlert"
+            },
+            "description": "지금 유효한 경보, 높은 단계부터. 10분 동안 새 근거가 없거나 /api/ack 하면 빠진다"
+          },
+          "ack_id": {
+            "type": "integer",
+            "description": "마지막 '확인함' 이벤트 id. 한 번도 안 눌렀으면 0"
+          },
+          "connection": {
+            "$ref": "#/components/schemas/Connection"
+          },
+          "gateway": {
+            "$ref": "#/components/schemas/Gateway"
+          },
+          "score": {
+            "$ref": "#/components/schemas/Score"
+          },
+          "counts": {
+            "type": "object",
+            "additionalProperties": {
+              "type": "integer"
+            },
+            "description": "단계별 누적 이벤트 수. 0인 단계는 키가 없다"
+          },
+          "trusted_ssids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "기준값을 저장한 와이파이 이름"
+          }
+        },
+        "required": [
+          "overall",
+          "overall_ko",
+          "modules",
+          "active",
+          "ack_id",
+          "connection",
+          "gateway",
+          "score",
+          "counts",
+          "trusted_ssids"
+        ]
+      },
+      "TrustItem": {
+        "type": "object",
+        "properties": {
+          "ssid": {
+            "type": "string"
+          },
+          "bssids": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "gateway_mac": {
+            "type": "string",
+            "nullable": true
+          },
+          "gateway_ip": {
+            "type": "string",
+            "nullable": true
+          }
+        },
+        "required": [
+          "ssid",
+          "bssids",
+          "gateway_mac",
+          "gateway_ip"
+        ]
+      },
+      "DiagItem": {
+        "type": "object",
+        "properties": {
+          "label": {
+            "type": "string",
+            "description": "화면 표시 이름"
+          },
+          "ok": {
+            "type": "boolean",
+            "nullable": true,
+            "description": "true 정상, false 문제, null 확인하지 않음"
+          },
+          "detail": {
+            "type": "string",
+            "description": "해결 방법을 포함한 설명"
+          }
+        },
+        "required": [
+          "label",
+          "ok",
+          "detail"
+        ]
+      }
+    },
+    "parameters": {
+      "Csrf": {
+        "name": "X-WifiGuard",
+        "in": "header",
+        "required": true,
+        "description": "모든 POST에 필수. 값은 '1'. 없으면 403",
+        "schema": {
+          "type": "string",
+          "enum": [
+            "1"
+          ]
+        }
+      }
+    }
+  }
+}

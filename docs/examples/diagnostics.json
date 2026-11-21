@@ -1,0 +1,27 @@
+{
+  "npcap": {
+    "label": "Npcap 드라이버",
+    "ok": false,
+    "detail": "Npcap이 없습니다. https://npcap.com 에서 설치하세요 (설치 옵션: 'WinPcap API-compatible Mode' 체크)."
+  },
+  "admin": {
+    "label": "관리자 권한",
+    "ok": true,
+    "detail": "관리자 권한으로 실행 중"
+  },
+  "wlan": {
+    "label": "와이파이",
+    "ok": true,
+    "detail": "무선 랜카드 켜짐, 와이파이 연결됨"
+  },
+  "location": {
+    "label": "위치 권한",
+    "ok": true,
+    "detail": "위치 권한 허용됨"
+  },
+  "networks": {
+    "label": "주변 AP 목록",
+    "ok": true,
+    "detail": "주변 AP(BSSID) 12개 읽힘"
+  }
+}
