@@ -13,9 +13,9 @@
     "warning": "경고"
   },
   "modules": {
-    "arp": "ARP 스푸핑",
-    "ap": "가짜 AP",
-    "dns": "DNS 응답 이상",
+    "arp": "인터넷 해킹",
+    "ap": "가짜 와이파이",
+    "dns": "가짜 사이트 유도",
     "system": "시스템"
   },
   "event_fields": [

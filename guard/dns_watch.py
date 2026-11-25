@@ -57,7 +57,7 @@ class DnsDetector:
                                            "level": None, "time": now})
 
         if p["src"] not in servers:
-            self._add(case, "D2", f"질문한 DNS 서버({', '.join(sorted(servers))})가 아닌 {p['src']}가 응답함")
+            self._add(case, "D2", f"사이트 주소를 물어본 곳({', '.join(sorted(servers))})이 아닌 {p['src']}가 답함")
         got = self.answered.setdefault(key, [])
         for src, prev in got:
             if prev == answers:
@@ -65,7 +65,7 @@ class DnsDetector:
             both_queried = src != p["src"] and src in servers and p["src"] in servers
             retransmitted = src == p["src"] and q["replies"][src] <= servers.get(src, 0)
             if not (both_queried or retransmitted):
-                self._add(case, "D1", f"같은 질문에 다른 답이 두 번 옴 ({', '.join(prev) or '없음'} / "
+                self._add(case, "D1", f"같은 사이트 주소에 다른 답이 두 번 옴 ({', '.join(prev) or '없음'} / "
                                       f"{', '.join(answers) or '없음'})")
                 case["answers"] = sorted(set(prev) | set(answers) | set(case["answers"]))
         if (p["src"], answers) not in got:
@@ -75,8 +75,8 @@ class DnsDetector:
             ref = self.reference(p["qname"])
             # 기준 조회 결과와 겹치는 답이 하나도 없는 응답이 있었는지 본다
             if ref and any(a and not set(a) & set(ref) for _, a in got):
-                self._add(case, "D3", f"기준 조회 결과({', '.join(sorted(ref))})와 겹치지 않는 답이 있음 "
-                                      "(CDN이면 정상일 수 있음)")
+                self._add(case, "D3", f"믿을 수 있는 다른 경로로 확인한 주소({', '.join(sorted(ref))})와 겹치지 않는 답이 있음 "
+                                      "(정상일 수도 있음)")
 
         lv = level(case["risk"])
         if lv and lv != case["level"]:

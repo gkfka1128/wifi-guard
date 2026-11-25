@@ -97,16 +97,16 @@ def detect(aps, trust=None, alert_at=ALERT_AT):
                 why.append(f"보안 방식이 다름 ({ap.get('auth')} / 다른 AP {auth_major})")
             if ssid in trust:
                 risk += W_UNKNOWN_BSSID
-                why.append("신뢰 목록에 없는 BSSID")
+                why.append("안전 목록에 없는 와이파이 고유번호")
             if majority_ok and ap["bssid"][:8] != oui_major:
                 risk += W_OUI
-                why.append(f"제조사(OUI) {ap['bssid'][:8]}가 다른 AP({oui_major})와 다름")
+                why.append(f"기기 제조사 번호대 {ap['bssid'][:8]}가 다른 와이파이({oui_major})와 다름")
             if local_admin(ap["bssid"]) and not local_admin(oui_major):
                 risk += W_LOCAL_MAC
-                why.append("임의 생성 MAC(로컬 관리 비트) — 핫스팟·소프트웨어 AP에서 흔함")
+                why.append("급조한 가짜 고유번호 — 소프트웨어로 만든 와이파이에서 흔함")
             if strongest is not None and ap["signal"] - strongest >= SIGNAL_GAP:
                 risk += W_SIGNAL
-                why.append(f"신뢰 AP보다 신호가 {ap['signal'] - strongest}%p 강함")
+                why.append(f"안전한 와이파이보다 신호가 {ap['signal'] - strongest}%p 강함")
             if risk >= alert_at:
                 alerts.append({"type": "evil_twin", "ssid": ssid, "bssid": ap["bssid"],
                                "auth": ap.get("auth"), "signal": ap["signal"],
@@ -121,7 +121,7 @@ def check_gateway(ssid, gateway_mac, trust_gw):
     if not expected or not gateway_mac or gateway_mac == expected:
         return None
     return {"type": "evil_twin_gateway", "ssid": ssid, "bssid": "", "auth": "", "signal": 0, "risk": 80,
-            "reasons": [f"이 와이파이의 공유기 MAC이 예전({expected})과 다름 ({gateway_mac})"]}
+            "reasons": [f"이 와이파이의 공유기 고유번호가 예전({expected})과 다름 ({gateway_mac})"]}
 
 
 def current_connection():

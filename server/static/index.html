@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>와이파이 지킴이 — 백엔드 확인</title>
 <!-- 실험망은 인터넷이 없을 수 있다. 이 스크립트를 못 불러오면 3초마다 API를 다시 읽는다 -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<script src="/vendor/socket.io.min.js"></script>
+<script>window.io || document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"><\/script>')</script>
 <style>
   :root { --bg:#f6f8f9; --card:#fff; --ink:#1d2a30; --sub:#5c6b73; --line:#dde3e6;
           --normal:#1b7f5a; --unknown:#6b7280; --caution:#c98a14; --warning:#c0392b; }

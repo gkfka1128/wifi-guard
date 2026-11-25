@@ -92,14 +92,14 @@ def check_networks():
         return {"ok": False, "detail": f"netsh 실행 실패: {out}"}
     n = sum(1 for line in out.splitlines() if line.strip().startswith("BSSID"))
     if n:
-        return {"ok": True, "detail": f"주변 AP(BSSID) {n}개 읽힘"}
+        return {"ok": True, "detail": f"주변 와이파이 {n}개 읽힘"}
     hint = " ".join(out.split())[:160]
-    return {"ok": False, "detail": "주변 AP 목록이 비어 있습니다. " + (f"netsh 메시지: {hint}" if hint else "")}
+    return {"ok": False, "detail": "주변 와이파이 목록이 비어 있습니다. " + (f"netsh 메시지: {hint}" if hint else "")}
 
 
-CHECKS = {"npcap": ("Npcap", check_npcap), "admin": ("관리자 권한", check_admin),
+CHECKS = {"npcap": ("패킷 수집 기능", check_npcap), "admin": ("관리자 권한", check_admin),
           "wlan": ("무선 랜카드", check_wlan), "location": ("위치 권한", check_location),
-          "networks": ("주변 AP 목록", check_networks)}
+          "networks": ("주변 와이파이", check_networks)}
 
 
 def run():

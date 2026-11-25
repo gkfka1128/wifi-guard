@@ -47,6 +47,10 @@ py -m venv .venv
 
 ## 3. 데모로 실행해 보기
 
+가장 쉬운 방법: **`demo.bat` 더블클릭** (관리자 권한·Npcap 필요 없음). 실시간 감시는 **`webstart.bat`** (관리자 권한으로 다시 열림). 일반 사용자용 안내는 [START-HERE.md](../START-HERE.md).
+
+명령으로 켜려면:
+
 ```powershell
 .venv\Scripts\python run_server.py --no-capture --demo
 ```
@@ -94,7 +98,7 @@ API 주소는 `http://127.0.0.1:5000` 으로 쓴다.
 POST 헤더, 실시간 연결, 끊겼을 때 폴링 대체를 이 파일이 처리한다.
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<script src="http://127.0.0.1:5000/vendor/socket.io.min.js"></script>  <!-- 백엔드가 준다 (인터넷 없어도 됨) -->
 <script src="wifiguard-client.js"></script>
 <script>
   const guard = WifiGuard.connect({
@@ -197,7 +201,7 @@ GitHub 저장소 페이지에서 **Pull request**를 만들면 서로 확인한 
 | POST가 403 | `X-WifiGuard: 1` 헤더 빠짐, 또는 허용 안 된 포트에서 부름 → `--allow-origin` |
 | 브라우저 콘솔에 CORS 오류 | 프론트 주소가 허용 목록에 없음 → 4-B의 `--allow-origin` |
 | 다른 PC·휴대폰에서 접속 안 됨 | 정상. 보안상 이 PC(127.0.0.1)에서만 열린다 |
-| 연결 상태가 `polling` | Socket.IO 스크립트를 못 불러옴(인터넷 없음). 3초마다 갱신으로 동작하니 그대로 써도 됨 |
+| 연결 상태가 `polling` | Socket.IO 스크립트를 못 불러옴(`/vendor/socket.io.min.js` 경로 확인). 3초마다 갱신으로 동작하니 그대로 써도 됨 |
 | ARP·DNS가 '확인 불가' | `--no-capture` 로 켰거나 Npcap·관리자 권한 없음 → 6번 |
 | 가짜 AP가 '확인 불가' | 와이파이 꺼짐 또는 위치 권한 꺼짐 → 6번의 2·3 |
 | 데모 버튼이 안 보임 | `--demo` 없이 켬 → 3번 명령으로 다시 실행 |
