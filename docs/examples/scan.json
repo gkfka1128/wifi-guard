@@ -21,9 +21,9 @@
       {
         "module": "ap",
         "level": "warning",
-        "title": "가짜 AP 의심: Cafe",
+        "title": "가짜 와이파이 의심: Cafe",
         "event_id": 1,
-        "last_seen": "2026-11-19T00:18:53+09:00"
+        "last_seen": "2026-11-25T19:19:09+09:00"
       }
     ],
     "ack_id": 0,
@@ -41,7 +41,7 @@
       "score": 80,
       "grade": "안전",
       "reasons": [
-        "같은 이름의 가짜 AP가 주변에 있음 (−20)"
+        "같은 이름의 가짜 와이파이가 주변에 있음 (−20)"
       ]
     },
     "counts": {

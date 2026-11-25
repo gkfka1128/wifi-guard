@@ -26,8 +26,8 @@ RANK = {"normal": 0, "unknown": 1, "caution": 2, "warning": 3}
 ACTIVE_WINDOW = 600     # 이 시간(초) 동안 새 근거가 없으면 경보가 '지금 유효'에서 빠진다
 DNS_SILENCE = 120       # 실시간 수집 중 UDP 53 DNS가 이만큼 안 보이면 DoH 사용을 의심
 CAPTURE_HINT = "Npcap 설치, 관리자 권한, 인터페이스 이름(--iface)을 확인하세요"
-DOH_HINT = ("UDP 53 DNS가 {s}초째 보이지 않음 — 브라우저나 Windows의 보안 DNS(DoH)를 쓰면 DNS 모듈은 "
-            "질문을 볼 수 없음. 실험할 때는 보안 DNS를 끄세요")
+DOH_HINT = ("사이트 주소 조회가 {s}초째 보이지 않음 — 브라우저나 Windows의 보안 DNS(DoH)를 쓰면 이 검사는 "
+            "내용을 볼 수 없음. 실험할 때는 보안 DNS를 끄세요")
 
 
 def key_for(ev):
@@ -87,8 +87,8 @@ class Engine:
     def _capture_loop(self):
         where = self.iface or "기본 인터페이스"
         self.live, self.dns_last = True, self.clock()
-        self.set_module("arp", "normal", f"패킷 수집 중 ({where})")
-        self.set_module("dns", "normal", f"패킷 수집 중 ({where}, UDP 53)")
+        self.set_module("arp", "normal", f"검사 중 ({where})")
+        self.set_module("dns", "normal", f"검사 중 ({where})")
         try:
             capture.sniff_live(self.iface, self.on_item, self.stop_event, on_error=self._packet_error)
         except Exception as e:     # noqa: BLE001 — 어떤 실패든 '확인 불가'로 알리는 것이 목적
@@ -238,7 +238,7 @@ class Engine:
     def _dns_seen(self):
         self.dns_last = self.clock()
         if self.live and self.modules["dns"]["level"] == "unknown":
-            self.set_module("dns", "normal", f"패킷 수집 중 ({self.iface or '기본 인터페이스'}, UDP 53)")
+            self.set_module("dns", "normal", f"검사 중 ({self.iface or '기본 인터페이스'})")
 
     def check_dns_silence(self):
         if not self.live or self.dns_last is None:
@@ -256,7 +256,7 @@ class Engine:
             self.set_module("ap", "unknown", f"AP 목록 조회 실패: {e}")
             return []
         if not aps:
-            self.set_module("ap", "unknown", "주변 AP 목록을 읽지 못함 — 와이파이가 꺼져 있거나 "
+            self.set_module("ap", "unknown", "주변 와이파이 목록을 읽지 못함 — 와이파이가 꺼져 있거나 "
                                              "Windows 위치 권한이 꺼져 있을 수 있음 (화면의 '환경 점검' 참고)")
             return []
         alerts = ap_watch.detect(aps, self.trust.get("ap"), alert_at=AP_CAUTION_AT)

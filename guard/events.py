@@ -36,7 +36,7 @@ def make(module, level, title, reason, evidence=None, advice=None, epoch=None):
 
 def from_arp(alert, advice=None):
     who = alert.get("suspect") or "확인 필요"
-    return make("arp", _FROM_KO[alert["level"]], "ARP 스푸핑 의심",
+    return make("arp", _FROM_KO[alert["level"]], "인터넷 해킹 의심",
                 " / ".join(alert["reasons"]),
                 {"target_mac": alert["mac"], "suspect": who, "score": alert["risk"],
                  "claimed_ips": alert["claimed_ips"], "real_macs": alert["real_macs"],
@@ -49,7 +49,7 @@ def from_ap(alert, caution_at, warning_at):
     level = "warning" if gw or alert["risk"] >= warning_at else "caution"
     if not gw and alert["risk"] < caution_at:
         raise ValueError("임계값 미만 AP는 이벤트가 아니다")
-    title = "접속한 와이파이의 공유기가 예전과 다름" if gw else f"가짜 AP 의심: {alert['ssid']}"
+    title = "접속한 와이파이의 공유기가 예전과 다름" if gw else f"가짜 와이파이 의심: {alert['ssid']}"
     return make("ap", level, title, " / ".join(alert["reasons"]),
                 {"ssid": alert["ssid"], "bssid": alert["bssid"], "auth": alert["auth"],
                  "signal": alert["signal"], "score": alert["risk"]},
@@ -57,7 +57,7 @@ def from_ap(alert, caution_at, warning_at):
 
 
 def from_dns(alert):
-    return make("dns", alert["level"], f"DNS 응답 이상: {alert['qname']}",
+    return make("dns", alert["level"], f"가짜 사이트 유도 의심: {alert['qname']}",
                 " / ".join(alert["reasons"]),
                 {k: alert[k] for k in ("qname", "client", "server", "answers", "score", "rules")},
                 ["다른 네트워크(휴대폰 데이터 등)에서 같은 주소로 접속해 비교해 보기"]

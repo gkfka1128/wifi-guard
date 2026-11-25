@@ -58,7 +58,7 @@ def main():
         threading.Thread(target=engine.replay, args=(a.replay,), daemon=True).start()
     elif a.no_capture:
         for m in ("arp", "dns"):
-            engine.set_module(m, "unknown", "패킷 수집을 끄고 실행함 (--no-capture)")
+            engine.set_module(m, "unknown", "실시간 검사를 끄고 실행함 (데모·화면 확인용)")
     print(f"와이파이 지킴이: http://127.0.0.1:{a.port}   (백엔드 확인 화면 /debug, API 문서 docs/API.md)")
     socketio.run(app, host="127.0.0.1", port=a.port, allow_unsafe_werkzeug=True)
 

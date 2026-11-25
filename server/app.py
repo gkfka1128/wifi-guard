@@ -16,6 +16,7 @@
 
   GET  /                  프론트엔드 (--frontend 폴더, 기본 frontend/)
   GET  /debug             백엔드 확인용 화면 (static/index.html)
+  GET  /vendor/socket.io.min.js  Socket.IO 클라이언트 (CDN 없이)
 
 보안
   - 127.0.0.1에만 연다 (run_server.py). 같은 와이파이의 다른 사람은 접속할 수 없다.
@@ -101,7 +102,7 @@ def create_app(engine, frontend_dir=None, allowed_origins=None, demo_pcap=None, 
             "version": API_VERSION,
             "levels": list(events.LEVELS),                  # 낮은 단계 → 높은 단계
             "level_ko": events.LEVEL_KO,
-            "modules": {"arp": "ARP 스푸핑", "ap": "가짜 AP", "dns": "DNS 응답 이상", "system": "시스템"},
+            "modules": {"arp": "인터넷 해킹", "ap": "가짜 와이파이", "dns": "가짜 사이트 유도", "system": "시스템"},
             "event_fields": ["id", "module", "level", "title", "reason", "evidence", "advice", "timestamp"],
             "demo": bool(demos),
             "csrf_header": CSRF_HEADER,
@@ -178,6 +179,10 @@ def create_app(engine, frontend_dir=None, allowed_origins=None, demo_pcap=None, 
         if front and (front / "index.html").exists():
             return send_from_directory(front, "index.html")
         return send_from_directory(STATIC, "index.html")
+
+    @app.get("/vendor/socket.io.min.js")
+    def vendor_socketio():
+        return send_from_directory(STATIC, "socket.io.min.js")      # 인터넷 없는 실험망에서도 실시간 연결
 
     @app.get("/<path:name>")
     def front_file(name):

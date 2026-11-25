@@ -38,7 +38,7 @@ CORS 설정이 필요 없고, 클라이언트는 `base: ""` 로 쓴다.
 ## 클라이언트 (`wifiguard-client.js`)
 
 ```html
-<script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.5/socket.io.min.js"></script>
+<script src="http://127.0.0.1:5000/vendor/socket.io.min.js"></script>  <!-- 백엔드가 준다. CDN 주소도 된다 -->
 <script src="wifiguard-client.js"></script>
 <script>
   const guard = WifiGuard.connect({
@@ -79,7 +79,7 @@ REST `/api/events` 의 원소와 Socket.IO `event` 가 모두 이 모양이다.
   "id": 5,
   "module": "arp",
   "level": "warning",
-  "title": "ARP 스푸핑 의심",
+  "title": "인터넷 해킹 의심",
   "reason": "공유기 192.168.0.1의 MAC이 00:26:66:4d:ca:18 → 88:36:6c:6a:c0:4c로 바뀜 / …",
   "evidence": { "target_mac": "88:36:6c:6a:c0:4c", "suspect": "88:36:6c:6a:c0:4c", "score": 80,
                 "claimed_ips": ["192.168.0.1"], "real_macs": {"192.168.0.1": "00:26:66:4d:ca:18"},
@@ -146,14 +146,14 @@ POST의 `Origin` 이 허용 목록에 없으면 403, 주소창 Host가 127.0.0.1
 {
   "overall": "warning", "overall_ko": "경고",
   "modules": {
-    "arp": {"level": "normal",  "detail": "패킷 수집 중 (Wi-Fi)"},
-    "dns": {"level": "normal",  "detail": "패킷 수집 중 (Wi-Fi, UDP 53만 — DoH는 보이지 않음)"},
+    "arp": {"level": "normal",  "detail": "검사 중 (Wi-Fi)"},
+    "dns": {"level": "normal",  "detail": "검사 중 (Wi-Fi)"},
     "ap":  {"level": "unknown", "detail": "주변 AP 목록을 읽지 못함 — …"}
   },
   "connection": {"ssid": "Cafe", "bssid": "88:36:6c:00:00:01", "auth": "WPA2-개인"},
   "gateway": {"ip": "192.168.0.1", "mac": "88:36:6c:00:00:01", "iface": "Wi-Fi"},
   "active": [
-    {"module": "arp", "level": "warning", "title": "ARP 스푸핑 의심", "event_id": 5,
+    {"module": "arp", "level": "warning", "title": "인터넷 해킹 의심", "event_id": 5,
      "last_seen": "2026-11-11T13:15:53+09:00"}
   ],
   "ack_id": 0,

@@ -105,14 +105,14 @@ class ArpDetector:
         known = self.binding.setdefault(ip, mac)
         if known != mac:
             self._add(mac, "R1:" + ip, "gw_conflict" if is_gw else "host_conflict",
-                      f"{'공유기 ' if is_gw else ''}{ip}의 MAC이 {known} → {mac}로 바뀜")
+                      f"{'공유기 ' if is_gw else ''}{ip}의 기기 고유번호가 {known} → {mac}로 바뀜")
             if oui(known) != oui(mac):
-                self._add(mac, "R4", "oui", f"제조사(OUI)가 {oui(known)} → {oui(mac)}로 다름")
+                self._add(mac, "R4", "oui", f"기기 제조사 번호대가 {oui(known)} → {oui(mac)}로 다름")
             self.rivals[ip].add(mac)
         elif self.rivals[ip]:                   # 원래 MAC이 다시 나타남: 교체가 아니라 두 MAC의 충돌
             for rival in self.rivals[ip]:
                 self._add(rival, "R5:" + ip, "flipflop_gw" if is_gw else "flipflop_host",
-                          f"원래 MAC {mac}이 {ip}를 다시 주장 (두 MAC이 번갈아 주장)")
+                          f"원래 기기 {mac}이 {ip}를 다시 주장함 (두 기기가 번갈아 나타남)")
 
         # 응답의 대상 IP(dst_ip)가 그 주소(ip)를 실제로 물었는지 본다. 남이 물은 것은 근거가 안 된다
         unsolicited_reply = p["op"] == 2 and now - self.requests.get((p["dst_ip"], ip), -1e9) > REQUEST_TTL
@@ -124,7 +124,7 @@ class ArpDetector:
                 q.popleft()
             if len(q) >= UNSOLICITED_COUNT:
                 self._add(mac, "R2", "unsolicited",
-                          f"요청 없는 주소 주장이 {UNSOLICITED_WINDOW:.0f}초에 {len(q)}번")
+                          f"묻지도 않았는데 '내가 공유기다'라는 신호가 {UNSOLICITED_WINDOW:.0f}초에 {len(q)}번")
 
         self.mac_ips[mac].add(ip)
         if len(self.mac_ips[mac]) >= 2:
